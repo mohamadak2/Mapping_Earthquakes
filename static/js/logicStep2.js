@@ -23,18 +23,56 @@ let baseMaps = {
 
 // Create the map object with a center and zoom level.
 let map = L.map('mapid',{
-  center: [43.7, -79.3],
-  zoom: 11,
-  layers: [satelliteStreets]
+  center: [39.5, -98.5],
+  zoom: 3,
+  layers: [streets]
 });
 
 // Then we add our 'graymap' tile layer to the map.
 L.control.layers(baseMaps).addTo(map);
 
-// Accessing the Toronto neighborhoods GeoJSON URL.
-let torontoHoods = "https://raw.githubusercontent.com/mohamadak2/Mapping_Earthquakes/main/torontoNeighborhoods.json";
+let myStyle = {
+  color: "#ffffa1",
+  weight: 2
+}
 
-d3.json(torontoHoods).then(function(data){
-console.log(data);
-L.geoJSON(data).addTo(map);
-});
+function getRadius(magnitude) {
+  if (magnitude === 0) {
+    return 1;
+  }
+  return magnitude * 4;
+}
+
+// This function returns the style data for each of the earthquakes we plot on
+// the map. We pass the magnitude of the earthquake into a function
+// to calculate the radius.
+function styleInfo(feature) {
+  return {
+    opacity: 1,
+    fillOpacity: 1,
+    fillColor: "#ffae42",
+    color: "#000000",
+    radius: getRadius(),
+    stroke: true,
+    weight: 0.5
+  };
+}
+
+
+
+// Retrieve the earthquake GeoJSON data.
+d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then(function(data) {
+
+// Creating a GeoJSON layer with the retrieved data.
+L.geoJson(data, {
+
+  // We turn each feature into a circleMarker on the map.
+  
+  pointToLayer: function(feature, latlng) {
+              console.log(data);
+              return L.circleMarker(latlng);
+          },
+        // We set the style for each circleMarker using our styleInfo function.
+      style: styleInfo
+      }).addTo(map);
+  });
